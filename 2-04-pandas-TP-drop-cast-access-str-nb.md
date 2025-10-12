@@ -60,7 +60,8 @@ df.head()
 
 ```{code-cell} ipython3
 # votre code
-df.drop(0)
+df=df.drop(df.columns[0], axis=1)
+df
 ```
 
 4. 1. appelez la méthode `info` des dataframes (`non-null` signifie `non-nan` i.e. non manquant)
@@ -68,6 +69,7 @@ df.drop(0)
 
 ```{code-cell} ipython3
 # votre code
+df.info() #après 7 Size il y a 0 non null
 ```
 
 5. 1. utilisez la méthode `dropna` des dataframes pour supprimer *en place* les colonnes qui ont toutes leurs valeurs manquantes  
@@ -76,6 +78,10 @@ df.drop(0)
 
 ```{code-cell} ipython3
 # votre code
+df1=df.copy()
+#df1.dropna?
+df2=df1.dropna(axis='columns', how='all') # dropna supprime les lignes donc on doit dire que c'est sur les colonnes, de plus ca supprime à partir de 1 NaN donc il faut dire quand y a que des NaN d'ou 'all'
+df2
 ```
 
 6. 1. affichez la ligne d'`index` $88$, que remarquez-vous ?
@@ -85,6 +91,9 @@ df.drop(0)
 
 ```{code-cell} ipython3
 # votre code
+df2.iloc[88] #il y a que des NaN, pas de valeurs
+df3=df2.dropna(how='all')
+df3
 ```
 
 7. 1. utilisez l'attribut `dtypes` des dataframes pour voir le type de vos colonnes
@@ -92,6 +101,7 @@ df.drop(0)
 
 ```{code-cell} ipython3
 # votre code
+df.dtypes #dans la colonne des mass il y a des type 'object'
 ```
 
 8. 1. utilisez la méthode `unique` des `Series`pour en regarder le contenu de la colonne des masses
@@ -99,6 +109,7 @@ df.drop(0)
 
 ```{code-cell} ipython3
 # votre code
+df3['Mass (lb)'].unique() #il s'agit que de nombre à part quelque <
 ```
 
 9. 1. conservez la colonne `'Mass (lb)'` d'origine  
@@ -110,6 +121,10 @@ df.drop(0)
 
 ```{code-cell} ipython3
 # votre code
+df4=df3.copy()
+df4['Mass (lb) orig']=df3['Mass (lb)']
+a=pd.to_numeric(df4['Mass (lb)'], errors='coerce')
+a.isna().sum()
 ```
 
 10. 1. cette solution ne vous satisfait pas, vous ne voulez perdre aucune valeur  
@@ -128,6 +143,12 @@ df.drop(0)
 
 ```{code-cell} ipython3
 # votre code
+df4['Mass (lb) orig'] = df4['Mass (lb) orig'].astype(str) #j'ai fait ca car j'avais le message : 'Can only use .str accessor with string values!'
+df4['Mass (lb) orig'] = df4['Mass (lb) orig'].str.replace('<', '', regex=False)
+df4['Mass (lb) orig'] = df4['Mass (lb) orig'].str.replace('>', '', regex=False)
+
+df4['Mass (lb) orig'] =df4['Mass (lb) orig'].astype(int)
+#df4['Mass (lb) orig'].dtypes, pour verifier
 ```
 
 11. 1. sachant `1 kg = 2.205 lb`  
@@ -136,6 +157,8 @@ df.drop(0)
 
 ```{code-cell} ipython3
 # votre code
+df4['Mass (kg)']=df4['Mass (lb) orig']/(2.205)
+df4
 ```
 
 12. 1. Quels sont les pays qui ont laissé des objets sur la lune ?
@@ -144,6 +167,11 @@ df.drop(0)
 
 ```{code-cell} ipython3
 # votre code
+print("les pays qui sont allé sur la lune sont:",  df4['Country'].unique())
+nombre=df4['Country'].value_counts()
+tot=df4.shape[0]
+pourcent=(100*nombre)/tot
+pourcent
 ```
 
 13. 1. quel est le poids total des objets sur la lune en kg ?
@@ -151,6 +179,9 @@ df.drop(0)
 
 ```{code-cell} ipython3
 # votre code
+poidstot=df4['Mass (kg)'].sum()
+poidsUSA=df4.loc[df4['Country']=='United States', 'Mass (kg)'].sum()
+poidsUSA, poidstot
 ```
 
 14. 1. quel pays a laissé l'objet le plus léger ?  
@@ -163,6 +194,11 @@ voyez les méthodes `Series.idxmin()` et `Series.argmin()`
 
 ```{code-cell} ipython3
 # votre code
+#leger=min(df4['Mass (kg)'])
+#a=df4.loc[df4['Mass (kg)']==leger]
+#a['Country'], j'avais pas vu tip
+i=df4['Mass (kg)'].idxmin() #nous donne l'index min
+df4['Country'][i] #on regarde la case qui correspond, Japon
 ```
 
 15. 1. y-a-t-il un Memorial sur la lune ?  
@@ -173,6 +209,9 @@ voyez les méthodes `Series.idxmin()` et `Series.argmin()`
 
 ```{code-cell} ipython3
 # votre code
+memo=df4['Artificial object'].str.contains('Memorial')
+memorial=df4[memo==True]
+memorial['Country'] #Luxembourg
 ```
 
 16. 1. faites la liste Python des objets sur la lune  
@@ -180,6 +219,7 @@ voyez les méthodes `Series.idxmin()` et `Series.argmin()`
 
 ```{code-cell} ipython3
 # votre code
+df4['Artificial object'].unique().tolist()
 ```
 
 ***
